@@ -11,10 +11,26 @@ const app = express();
 // You have been given a numberOfRequestsForUser object to start off with which
 // clears every one second
 
+
 let numberOfRequestsForUser = {};
 setInterval(() => {
-    numberOfRequestsForUser = {};
-}, 1000)
+  numberOfRequestsForUser = {};
+}, 2000)
+
+app.use(function(req, res, next){
+  const userID = req.header['user-id'];
+  if(numberOfRequestsForUser[userID]){
+    numberOfRequestsForUser[userID]++;
+    if(numberOfRequestsForUser[userID] > 5){
+      res.status(404).send('Too many requests');
+    }else{
+      next();
+    }
+  } else{
+    numberOfRequestsForUser[userID] = 1;
+    next();
+  }
+})
 
 app.get('/user', function(req, res) {
   res.status(200).json({ name: 'john' });
@@ -23,5 +39,7 @@ app.get('/user', function(req, res) {
 app.post('/user', function(req, res) {
   res.status(200).json({ msg: 'created dummy user' });
 });
+
+app.listen(3000);
 
 module.exports = app;
